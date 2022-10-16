@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:meteo/utils/getDate.dart';
 import 'package:meteo/utils/getTemperatureAssets.dart';
+import 'package:meteo/models/WeatherModel.dart';
 
 class PageDetails extends StatelessWidget {
   const PageDetails({super.key, required this.info, required this.city});
-  final Map<String, dynamic> info;
+  final WeatherForecastItem info;
   final String city;
   String getHour(int timestamp){
     final datetimeMeteo = DateTime.fromMillisecondsSinceEpoch(timestamp*1000);
@@ -18,7 +19,7 @@ class PageDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${getDate(info?['dt'] as int)} à ${city}'),
+        title: Text('${getDate(info.dt as int)} à ${city}'),
       ),
       body: SingleChildScrollView(
         child: Container(
@@ -31,14 +32,14 @@ class PageDetails extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      Text('${info?['temp']?['day']}°C', style: TextStyle(
+                      Text('${info.temperature}°C', style: TextStyle(
                           fontSize: 40.0
                       )),
                       Hero(
-                          tag: info['dt'],
+                          tag: info.dt,
                           child: Container(
                             height: 100.0,
-                            child: Image.asset(getTemperatureAssets(info?['weather']?[0]?['icon'] as String)?['icon'], height: 80.0,),
+                            child: Image.asset(getTemperatureAssets(info.icon as String)?['icon'], height: 80.0,),
                           )
                       ),
                     ],
@@ -55,7 +56,7 @@ class PageDetails extends StatelessWidget {
                                 Text('Minimale', style: TextStyle(
                                     fontSize: 15.0,
                                     fontWeight: FontWeight.bold),),
-                                Text('${info?['temp']?['min']}°C')
+                                Text('${info.min}°C')
                               ],
                             ),
                             Column(
@@ -63,7 +64,7 @@ class PageDetails extends StatelessWidget {
                                 Text('Maximale', style: TextStyle(
                                     fontSize: 15.0,
                                     fontWeight: FontWeight.bold),),
-                                Text('${info?['temp']?['max']}°C')
+                                Text('${info.max}°C')
                               ],
                             ),
                           ],
@@ -77,7 +78,7 @@ class PageDetails extends StatelessWidget {
                                 Text('Lever du soleil', style: TextStyle(
                                     fontSize: 15.0,
                                     fontWeight: FontWeight.bold),),
-                                Text(getHour(info['sunrise']))
+                                Text(getHour(info.sunrise))
                               ],
                             ),
                             Column(
@@ -85,7 +86,7 @@ class PageDetails extends StatelessWidget {
                                 Text('Coucher du soleil', style: TextStyle(
                                     fontSize: 15.0,
                                     fontWeight: FontWeight.bold),),
-                                Text(getHour(info['sunset']))
+                                Text(getHour(info.sunset))
                               ],
                             ),
                           ],
@@ -99,7 +100,7 @@ class PageDetails extends StatelessWidget {
                                 Text('Vitesse des vents', style: TextStyle(
                                     fontSize: 15.0,
                                     fontWeight: FontWeight.bold),),
-                                Text('${info?['wind_speed']} km/h')
+                                Text('${info.wind_speed} km/h')
                               ],
                             ),
                             Column(
@@ -107,7 +108,7 @@ class PageDetails extends StatelessWidget {
                                 Text('Humidité', style: TextStyle(
                                     fontSize: 15.0,
                                     fontWeight: FontWeight.bold),),
-                                Text('${info?['humidity']}%'),
+                                Text('${info.humidity}%'),
                               ],
                             ),
                           ],

@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:meteo/constants/WeatherApiKey.dart';
-
+import 'package:meteo/models/WeatherModel.dart';
 
 
 class PageMeteo extends StatefulWidget {
@@ -40,7 +40,7 @@ class _MyHomePageState extends State<PageMeteo> with SingleTickerProviderStateMi
   final String lat;
   String city;
   String lng;
-  late Future<Map<String, dynamic>> response;
+  late Future<WeatherForecast> response;
   _MyHomePageState({
     required this.lat,
     required this.lng,
@@ -62,24 +62,25 @@ class _MyHomePageState extends State<PageMeteo> with SingleTickerProviderStateMi
     super.dispose();
   }
 
-  Future<Map<String, dynamic>> fetchMeteo() async {
+  Future<WeatherForecast> fetchMeteo() async {
     final response = await http.get(Uri.parse('https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lng}&appid=${apiKey}&lang=fr&units=metric&exclude=minutely,alerts,hourly'));
     if (response.statusCode == 200) {
-      final parsed = json.decode(response.body);
-      return parsed;
+      final parsed = jsonDecode(response.body);
+      return WeatherForecast.fromJson(parsed as Map<String, dynamic>);
     } else {
       throw Exception('Failed to load');
     }
   }
 
   Widget _buildListItems() {
-    return FutureBuilder<Map<String, dynamic>>(
+    return FutureBuilder<WeatherForecast>(
         future: response,
         builder: (context, snapshot) {
+          print(snapshot.error);
           if (snapshot.hasData) {
             return ListView(
               children: [
-                for(var child in snapshot.data?['daily'] ?? [])
+                for(var child in snapshot.data?.days ?? [])
                   InkWell(
                     onTap: (){
                       Navigator.of(context).push(
@@ -93,7 +94,7 @@ class _MyHomePageState extends State<PageMeteo> with SingleTickerProviderStateMi
                           borderRadius: BorderRadius.all(
                             Radius.circular(20),
                           ),
-                          color: Color(getTemperatureAssets(child?['weather']?[0]?['icon'] as String)?['backgroundColor'])
+                          color: Color(getTemperatureAssets(child.icon)?['backgroundColor'])
                       ),
                       height: 150,
                       margin: EdgeInsets.fromLTRB(15.0, 10.0, 15.0, 10.0),
@@ -102,8 +103,8 @@ class _MyHomePageState extends State<PageMeteo> with SingleTickerProviderStateMi
                           Padding(padding: EdgeInsets.all(20.0),
                             child: Column(children: [
                               Hero(
-                                  tag: child['dt'],
-                                  child: Image.asset(getTemperatureAssets(child?['weather']?[0]?['icon'] as String)?['icon'], height: 100.0, width: 100.0,)
+                                  tag: child.dt,
+                                  child: Image.asset(getTemperatureAssets(child.icon as String)?['icon'], height: 100.0, width: 100.0,)
                               ),
                             ],),
                           ),
@@ -111,16 +112,16 @@ class _MyHomePageState extends State<PageMeteo> with SingleTickerProviderStateMi
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                                 children: [
-                                  Text(getDate(child?['dt'] as int),
-                                    style: TextStyle(color: Color(getTemperatureAssets(child?['weather']?[0]?['icon'] as String)?['color']),
+                                  Text(getDate(child.dt as int),
+                                    style: TextStyle(color: Color(getTemperatureAssets(child.icon as String)?['color']),
                                         fontSize: 20.0,
                                         fontWeight: FontWeight.bold
                                     ),
                                   ),
                                   Row(
                                     children: [
-                                      Center(child: Text((child?['temp']?['day'].toString() ?? '') + "°",
-                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30.0, color: Color(getTemperatureAssets(child?['weather']?[0]?['icon'] as String)?['color'])
+                                      Center(child: Text((child.temperature.toString()) + "°",
+                                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30.0, color: Color(getTemperatureAssets(child.icon)?['color'])
                                         ),
                                       ),)
                                       ,
